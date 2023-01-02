@@ -14,6 +14,6 @@ $a
 
 for($i=0; $i -lt 24; $i++){
 	$x=$a.SubString(($i*11),11)
-	$y=([Convert]::ToInt32($x,2))+1
+	$y=([Convert]::ToInt32($x,2))+1 #BIP39 index starts at 1
 	"{0,2} {1} {2}" -f ($i+1),$x,$y
 }
