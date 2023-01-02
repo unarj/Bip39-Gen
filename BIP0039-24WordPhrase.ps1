@@ -10,9 +10,10 @@ for($i=0; $i -lt 256; $i++){
 	$a=$a+([Convert]::ToString((Get-Random -Maximum:2)))
 }
 $a=$a+($a.SubString(0,8))
+$a
 
 for($i=0; $i -lt 24; $i++){
 	$x=$a.SubString(($i*11),11)
 	$y=[Convert]::ToInt32($x,2)
-	"{0:d2} {1} {2}" -f ($i+1),$x,$y
+	"{0,2} {1} {2}" -f ($i+1),$x,$y
 }
