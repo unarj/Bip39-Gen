@@ -12,12 +12,11 @@ for($i=0; $i -lt 256; $i++){
 	$a=$a+([Convert]::ToString((Get-Random -Maximum:2)))
 }
 # hashing not returning expected results, not being read as binary?
-$b=(Get-FileHash -InputStream:([IO.MemoryStream]([byte[]]($a -split '(.{2})' -ne '')))).Hash
+$b=(Get-FileHash -InputStream:([IO.MemoryStream]([byte[]][char[]]($a))) -Algorithm:SHA256).Hash
 $c=([Convert]::ToString(('0x'+$b.SubString(0,2)),2)).PadLeft(8,'0')
 $d=$a+$c
 
 for($i=0; $i -lt 24; $i++){
-	if($i -eq 0){ "in binary      decimal" }
 	$x=$d.SubString(($i*11),11)
 	$y=([Convert]::ToInt32($x,2))+1 #BIP39 index starts at 1
 	"{0,2} {1} {2}" -f ($i+1),$x,$y
