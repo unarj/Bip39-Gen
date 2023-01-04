@@ -1,23 +1,25 @@
-## this is a 24 word random seed phrase generator in PowerShell
-## from the method described on https://developers.ledger.com/docs/embedded-app/psd-masterseed/
-# $a is random 256 bit string 
-# $b is sha256 hash of $a
-# $c is first 8 bits of $b
-# $d is $a+$c (full dataset for the seed)
-# $x is $a cut into 24*11 bit strings
-# $y is $x in decimal for look up on https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md
+## this is a random mnemonic seed phrase generator for PowerShell
 
-$a=''
-for($i=0; $i -lt 256; $i++){
-	$a=$a+([Convert]::ToString((Get-Random -Maximum:2)))
+$entropyLen=256 #must be multiple of 32, 256 = 24 words
+"  >> generating $entropyLen bits of randomness..."
+$entropy=''
+for($i=0; $i -lt $entropyLen; $i++){
+	$entropy=$entropy+([Convert]::ToString((Get-Random -Maximum:2)))
 }
-# hashing not returning expected results, not being read as binary?
-$b=(Get-FileHash -InputStream:([IO.MemoryStream]([byte[]][char[]]($a))) -Algorithm:SHA256).Hash
-$c=([Convert]::ToString(('0x'+$b.SubString(0,2)),2)).PadLeft(8,'0')
-$d=$a+$c
 
-for($i=0; $i -lt 24; $i++){
-	$x=$d.SubString(($i*11),11)
-	$y=([Convert]::ToInt32($x,2))+1 #BIP39 index starts at 1
-	"{0,2} {1} {2}" -f ($i+1),$x,$y
+"  >> calculating sha256 hash..."
+$entropyBytes=$entropy -split '(.{8})' -ne '' |%{[Convert]::ToByte($_,2)}
+$hash=(Get-FileHash -InputStream:([IO.MemoryStream]([byte[]]$entropyBytes)) -Algorithm:SHA256).Hash
+$hashBinary=([Convert]::FromBase64String($hash) |%{[Convert]::ToString($_,2).PadLeft(8,'0')}) -join ''
+
+$checksumLen=$entropyLen/32
+"  >> adding $checksumLen checksum bits..."
+$seed=$entropy+($hashBinary.SubString(0,$checksumLen))
+
+"  >> converting to 11bit decimal, +1 for index offset..."
+$i=1
+$seed -split '(.{11})' -ne '' |%{
+	"{0,2} {1} {2}" -f $i,$_,(([Convert]::ToInt32($_,2))+1)
+	$i++
 }
+"  >> BIP39 word list https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md"
