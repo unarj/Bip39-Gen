@@ -12,10 +12,9 @@ for($i=0; $i -lt $entropyLen; $i++){
 }
 
 ">> calculating sha256 hash..."
-# this method doesn't seem to give same results as Ledger, invalid key generated
 $entropyBytes=$entropy -split '(.{8})' -ne '' |%{[Convert]::ToByte($_,2)}
-$hash=(Get-FileHash -InputStream:([IO.MemoryStream]([byte[]]$entropyBytes)) -Algorithm:SHA256).Hash
-$hashBinary=($hash -split '(.{2})' -ne ''|%{[Convert]::ToString('0x'+$_,2).PadLeft(8,'0')}) -join ''
+$hash=([Security.Cryptography.HashAlgorithm]::Create('sha256')).ComputeHash($entropyBytes)
+$hashBinary=($hash |%{[Convert]::ToString($_,2).PadLeft(8,'0')}) -join ''
 
 ">> adding $checksumLen checksum bits..."
 $seed=$entropy+($hashBinary.SubString(0,$checksumLen))
