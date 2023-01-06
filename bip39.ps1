@@ -1,6 +1,3 @@
-## THIS IS CURRENTLY _NOT_ WORKING WITH LEDGER S PLUS DEVICE (ONLY DEVICE TESTED)
-## ASSUMING THE SHA256 HASH IS CALCULATED DIFFERENTLY 
-
 $entropyLen=256 #must be multiple of 32
 
 # above may need to change for your use-case, below should not
